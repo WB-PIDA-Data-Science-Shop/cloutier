@@ -109,9 +109,9 @@ combine_dt <-
             keep = TRUE)
 
 
-# #### send combined data to Mathieu
-haven::write_dta(combine_dt,
-                 "data-raw/gallup_vdem_qogstdts.dta")
+# # #### send combined data to Mathieu
+# haven::write_dta(combine_dt,
+#                  "data-raw/gallup_vdem_qogstdts.dta")
 
 ### create the labels for vdem variables
 
@@ -149,7 +149,7 @@ combine_dt <-
                 "v2xdd_dd", "election_confidence", "v2cltrnslw",
                 "bti_ffe", "ibp_cat", "egov_epar", "v2csprtcpt",
                 "v2cseeorgs", "v2cscnsult", "voltime_org", "bti_aar",
-                "bti_csp", "wbcountryname", "wbcode", "wbregion",
+                "bti_ig", "bti_csp", "wbcountryname", "wbcode", "wbregion",
                 "wbincomegroup", "wblendingcat", "year")
 
 #### include the variable labels for the v2 variables in combine_dt that are
@@ -173,6 +173,58 @@ cloutier_dt <-
   set_variable_labels(year = "Year") ## set variable label for variable "year"
 
 # save(justpulse_dt, file = "data/justpulse_dt.rda") ### save the combined dataset
+
+###### ------------- enough cleaning, index computations time! --------------- #######
+
+cloutier_dt <-
+  cloutier_dt %>%
+  mutate(social_capital = compute_transdices(dt = .,
+                                             vars = c("v2dlengage", "bti_sc"),
+                                             std_funs = scale,
+                                             agg_fun = sum,
+                                             index_fun = scale)) %>%
+  mutate(absence_exclusion = compute_transdices(dt = .,
+                                                vars = c("v2xeg_eqprotec", "bti_eo"),
+                                                std_funs = scale,
+                                                agg_fun = sum,
+                                                index_fun = scale)) %>%
+  mutate(absence_capture = compute_transdices(dt = .,
+                                              vars = c("v2pepwrsoc", "v2pepwrses"),
+                                              std_funs = scale,
+                                              agg_fun = sum,
+                                              index_fun = scale)) %>%
+  mutate(vdeminformal = v2x_freexp_altinf + v2caassemb) %>%
+  mutate(btiinformal = bti_aar + bti_foe) %>%
+  mutate(informal_channels = compute_transdices(dt = .,
+                                                vars = c("vdeminformal", "btiinformal"),
+                                                std_funs = scale,
+                                                agg_fun = sum,
+                                                index_fun = scale)) %>%
+  mutate(vdeminstitutional = v2xel_frefair + v2xel_locelec) %>%
+  mutate(btiinstitutional = bti_ffe + ibp_cat) %>%
+  mutate(institutional_channels = compute_transdices(dt = .,
+                                                     vars = c("vdeminstitutional", "btiinstitutional"),
+                                                     std_funs = scale,
+                                                     agg_fun = sum,
+                                                     index_fun = scale)) %>%
+  mutate(vdemcso = v2csprtcpt + v2cscnsult) %>%
+  mutate(bticso = bti_ig + bti_csp) %>%
+  mutate(intermediary_channels = compute_transdices(dt = .,
+                                                    vars = c("vdemcso", "bticso"),
+                                                    std_funs = scale,
+                                                    agg_fun = sum,
+                                                    index_fun = scale)) %>%
+  mutate(civil_capacity = scale(x = social_capital + absence_exclusion + absence_capture)) %>%
+  mutate(quality_interface = scale(informal_channels + institutional_channels + intermediary_channels))
+
+
+##### create regional and global comparators datasets now
+
+
+
+
+
+
 
 ### save in convenient form for diffs
 write.csv(cloutier_dt, "data-raw/cloutier_dt.csv")
