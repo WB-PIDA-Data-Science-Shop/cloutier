@@ -150,7 +150,8 @@ combine_dt <-
                 "bti_ffe", "ibp_cat", "egov_epar", "v2csprtcpt",
                 "v2cseeorgs", "v2cscnsult", "voltime_org", "bti_aar",
                 "bti_ig", "bti_csp", "wbcountryname", "wbcode", "wbregion",
-                "wbincomegroup", "wblendingcat", "year")
+                "wbincomegroup", "wblendingcat", "year", "natgov_confidence",
+                "election_confidence")
 
 #### include the variable labels for the v2 variables in combine_dt that are
 #### unlabelled and have labels in vdemlabel_dt
@@ -215,24 +216,62 @@ cloutier_dt <-
                                                     agg_fun = sum,
                                                     index_fun = scale)) %>%
   mutate(civil_capacity = scale(x = social_capital + absence_exclusion + absence_capture)) %>%
-  mutate(quality_interface = scale(informal_channels + institutional_channels + intermediary_channels))
+  mutate(quality_interface = scale(informal_channels + institutional_channels + intermediary_channels)) %>%
+  mutate(across(c(vdeminformal, btiinformal, vdeminstitutional,
+                  btiinstitutional, vdemcso, bticso),
+         scale)) %>%
+  mutate(across(where(is.numeric), preserve_labels_as_numeric)) %>%
+  set_variable_labels(social_capital = "Social Capital",
+                      absence_exclusion = "Absence of Exclusion",
+                      absence_capture = "Absence of Elite Capture",
+                      informal_channels = "Informal Channels",
+                      institutional_channels = "Institutional Channels",
+                      intermediary_channels = "Intermediary Channels",
+                      civil_capacity = "Civil Capacity",
+                      quality_interface = "Quality of the Citizen-State Interface",
+                      vdeminformal = "Scaled sum of variables v2x_freexp_altinf and v2caassemb",
+                      btiinformal = "Scaled sum of variables bti_aar and bti_foe",
+                      vdeminstitutional = "Scaled sum of variables v2xel_frefair and v2xel_locelec",
+                      btiinstitutional = "Scaled sum of variables bti_ffe and ibp_cat",
+                      vdemcso = "Scaled sum of variables v2csprtcpt and v2cscnsult",
+                      bticso = "Scaled sum of the variables bti_ig and bti_csp")
+
+
+
+index_list <- c("social_capital", "absence_exclusion", "absence_capture",
+                "vdeminformal", "btiinformal", "informal_channels",
+                "vdeminstitutional", "btiinstitutional", "institutional_channels",
+                "vdemcso", "bticso", "intermediary_channels","civil_capacity",
+                "quality_interface")
 
 
 ##### create regional and global comparators datasets now
 
+regcomp_dt <-
+  cloutier_dt %>%
+  as.data.table() %>%
+  .[, lapply(.SD, mean, na.rm = TRUE),
+    .SDcols = index_list,
+    by = c("year", "wbregion")] %>%
+  filter(!is.na(wbregion))
 
-
-
+globalcomp_dt <-
+  cloutier_dt %>%
+  as.data.table() %>%
+  .[, lapply(.SD, mean, na.rm = TRUE), .SDcols = index_list, by = "year"]
 
 
 
 ### save in convenient form for diffs
 write.csv(cloutier_dt, "data-raw/cloutier_dt.csv")
+write.csv(regcomp_dt, "data-raw/regional_comparator.csv")
+write.csv(globalcomp_dt, "data-raw/global_comparator.csv")
 
 
 ### save as package data
 usethis::use_data(cloutier_dt, overwrite = TRUE)
-
+usethis::use_data(regcomp_dt, overwrite = TRUE)
+usethis::use_data(globalcomp_dt, overwrite = TRUE)
 
 
 

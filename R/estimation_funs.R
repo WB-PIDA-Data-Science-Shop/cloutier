@@ -61,7 +61,18 @@ compute_transdices <- function(vars,
 }
 
 
+# Function to preserve labels while ensuring numeric output
+preserve_labels_as_numeric <- function(x) {
 
+  lbls <- attr(x, "label")  # Extract variable label
+
+  x <- as.numeric(x)  # Convert to numeric
+
+  attr(x, "label") <- lbls  # Reapply label
+
+  return(x)
+
+}
 
 
 
