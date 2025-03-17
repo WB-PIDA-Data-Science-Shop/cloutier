@@ -1,0 +1,59 @@
+---
+title: "Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    smooth_scroll: true
+---
+<br><br><br>
+
+
+```{css, echo=FALSE}
+.custom {
+  margin-top: 30px;
+}
+
+.custom .chart-title{
+  font-size: 30px;
+  font-weight: bold;
+}
+
+```
+
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(leaflet)
+```
+
+Row
+-----------------------------------------------------------------------
+
+### Articles per Day
+
+```{r}
+valueBox("5 articles", icon = "fa-pencil")
+```
+
+### Comments per Day
+
+```{r}
+valueBox("10 comments", icon = "fa-comments")
+```
+
+
+
+Row
+-----------------------------------------------------------------------
+### Map {.custom}
+
+
+```{r}
+m <- leaflet() %>%
+    addTiles() %>%  
+    setView(lng=-77.030137, lat=38.902986, zoom = 16) %>%
+    addMarkers(lng=-77.030137, lat=38.902986, popup="<b>Hello</b><br><a href='https://www.washingtonpost.com'>-Me</a>")
+
+m 
+```

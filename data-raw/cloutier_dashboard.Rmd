@@ -1,0 +1,176 @@
+---
+title: "Cloutier Factsheets"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+runtime: shiny
+---
+
+```{r global, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+
+if (sum(installed.packages()[,1] %in% "pacman") != 1){
+  
+  install.packages("pacman")
+  
+}
+
+pacman::p_load(flexdashboard, dplyr, ggplot2, here, shiny)
+
+load(here::here("data/cloutier_dt.rda"))
+load(here::here("data/globalcomp_dt.rda"))
+load(here::here("data/regcomp_dt.rda"))
+
+country_dt <- 
+  cloutier_dt %>%
+  filter(year >= 2005 & !is.na(wbcountryname))
+
+global_dt <- 
+  globalcomp_dt %>%
+  filter(year >= 2005) %>%
+  rename_with(~ paste0(.x, "_g"), .cols = -year)
+
+country_dt <- 
+  country_dt %>%
+  merge(global_dt, by = "year") %>%
+  mutate(year = as.integer(year))
+
+
+reg_dt <- 
+  regcomp_dt %>%
+  filter(year >= 2005 & !is.na(wbregion))
+
+```
+
+
+Column {.sidebar}
+----------------------------------------------------------------------------------------------------------------------
+
+Please select your country of interest: 
+```{r}
+
+selectInput(inputId = "wbcountryname", 
+            label = "Country Name", 
+            choices = sort(unique(country_dt$wbcountryname)))
+
+
+```
+
+Row 
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo=FALSE, results='asis'}
+
+div(style = "text-align:center; 
+            font-size: 24px; 
+            font-weight: bold; 
+            margin-bottom: -40px; 
+            padding-bottom: 0px;",
+    "Aggregate Indices")
+```
+
+Row
+----------------------------------------------------------------------------------------------------------------------
+### 
+```{r}
+#' A function to generate flexdashboard grobs/plots 
+#' 
+#' This function will generate the flexdashboard plots from the cloutier data that will plot a specified variable and 
+#' a specified comparator for the dashboard. 
+#' 
+#' @param var a character, the variable of interest
+#' @param comp_tag a character, a comparator tag i.e. either "_g" for global comparator or "_r" for regional #'comparator as is currently in the data. Make sure to prepare `country_dt` according to have those variables
+#' @param miss_x numeric, the x location for the message to be returned in the plot area when data is all missing
+#' @param miss_y numeric, the y location for the message to be returned in the plot area when data is all missing
+#' @param plot_title a character, title for the plot being created
+#' @param comp_label a character, the legend label for the comparator 
+#' 
+#' @export
+#' 
+#' @importFrom ggplot2 shiny
+
+# Server - Render Plot
+gen_plot <- function(var = "civil_capacity",
+                     comp_tag = "_g",
+                     miss_x = 0.5,
+                     miss_y = 0.5,
+                     plot_title = "Civil Capacity",
+                     comp_label = "Country Comparator"){
+  
+  selected_country_data <- 
+    reactive({
+  
+      req(input$wbcountryname)
+  
+      country_dt[country_dt$wbcountryname == input$wbcountryname & 
+                   !is.na(country_dt[[var]]),
+                 c("year", var, paste0(var, "_g"))]
+  
+    })
+
+  p <- 
+  renderPlot({
+    
+    plot_df <- selected_country_data()
+    
+    has_country_logical <- any(!is.na(plot_df[[var]]))
+    has_globalcomp_logical <- any(!is.na(plot_df[[paste0(var, "_g")]]))
+    
+    if (!has_country_logical & !has_globalcomp_logical){
+      
+      plot.new()
+      
+      text(miss_x, miss_y, "Missing country data & global comparator data", cex = 1.5)
+      
+      return()
+      
+    } else if (!has_country_logical) {
+      
+      plot.new()
+      
+      text(miss_x, miss_y, "Missing country data", cex = 1.5)
+      
+      return()
+      
+    } else {
+      
+      plot_df$var <- plot_df[[var]]
+      plot_df$var_g <- plot_df[[paste0(var, "_g")]]
+      
+      plot_df %>%
+        ggplot(aes(x = year)) +
+        geom_line(aes(y = var, color = "Country"), linewidth = 0.4) +
+        geom_line(aes(y = var_g, color = comp_label),
+                  linewidth = 0.4, linetype = "dashed") +
+        labs(title = plot_title,
+             x = NULL,
+             y = NULL) + 
+        theme_minimal() +
+        theme(legend.position = "bottom",
+              legend.title = element_blank())
+  
+    }
+  
+  })
+  
+  return(p)
+  
+}
+
+gen_plot()
+
+```
+
+### 
+```{r}
+
+ gen_plot(var = "quality_interface", 
+          plot_title = "Quality of Citizen-State Interface")
+
+```
+
+
+
+
+
+
+
+
