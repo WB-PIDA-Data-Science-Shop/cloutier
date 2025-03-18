@@ -1,12 +1,15 @@
 ---
-title: "Cloutier Factsheets"
+title: "Social Contract Factsheet"
 output: 
   flexdashboard::flex_dashboard:
     orientation: rows
+    vertical_layout: scroll
+    theme: simplex
+    social: menu
 runtime: shiny
 ---
 
-```{r global, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
 
 if (sum(installed.packages()[,1] %in% "pacman") != 1){
   
@@ -14,11 +17,15 @@ if (sum(installed.packages()[,1] %in% "pacman") != 1){
   
 }
 
-pacman::p_load(flexdashboard, dplyr, ggplot2, here, shiny)
+pacman::p_load(flexdashboard, dplyr, ggplot2, 
+               here, shiny, grid, htmltools, 
+               bslib, webshot2)
 
 load(here::here("data/cloutier_dt.rda"))
 load(here::here("data/globalcomp_dt.rda"))
 load(here::here("data/regcomp_dt.rda"))
+
+### install package from github
 
 country_dt <- 
   cloutier_dt %>%
@@ -49,27 +56,19 @@ Please select your country of interest:
 ```{r}
 
 selectInput(inputId = "wbcountryname", 
-            label = "Country Name", 
+            label = "",
             choices = sort(unique(country_dt$wbcountryname)))
 
+downloadButton("download_factsheet", "Download Factsheet")
+
 
 ```
 
-Row 
-----------------------------------------------------------------------------------------------------------------------
-```{r, echo=FALSE, results='asis'}
-
-div(style = "text-align:center; 
-            font-size: 24px; 
-            font-weight: bold; 
-            margin-bottom: -40px; 
-            padding-bottom: 0px;",
-    "Aggregate Indices")
-```
 
 Row
 ----------------------------------------------------------------------------------------------------------------------
-### 
+
+###
 ```{r}
 #' A function to generate flexdashboard grobs/plots 
 #' 
@@ -93,7 +92,11 @@ gen_plot <- function(var = "civil_capacity",
                      miss_x = 0.5,
                      miss_y = 0.5,
                      plot_title = "Civil Capacity",
-                     comp_label = "Country Comparator"){
+                     comp_label = "World",
+                     footstr, 
+                     anote_x = 0.5,
+                     anote_y = -0.1,
+                     anote_size = 10){
   
   selected_country_data <- 
     reactive({
@@ -137,16 +140,22 @@ gen_plot <- function(var = "civil_capacity",
       
       plot_df %>%
         ggplot(aes(x = year)) +
-        geom_line(aes(y = var, color = "Country"), linewidth = 0.4) +
-        geom_line(aes(y = var_g, color = comp_label),
-                  linewidth = 0.4, linetype = "dashed") +
+        geom_line(aes(y = var, 
+                      color = input$wbcountryname), 
+                  linewidth = 0.4) +
+        geom_line(aes(y = var_g, 
+                      color = comp_label),
+                  linewidth = 0.4, 
+                  linetype = "dashed") +
         labs(title = plot_title,
              x = NULL,
-             y = NULL) + 
+             y = NULL,
+             caption = footstr) + 
         theme_minimal() +
         theme(legend.position = "bottom",
-              legend.title = element_blank())
-  
+              legend.title = element_blank(),
+              plot.title = element_text(size = 14, face = "bold"),
+              plot.caption = element_text(hjust = 0, size = 12, face = "bold")) 
     }
   
   })
@@ -155,7 +164,7 @@ gen_plot <- function(var = "civil_capacity",
   
 }
 
-gen_plot()
+gen_plot(footstr = "Average of social captial, absence of exclusion, and absence of capture")
 
 ```
 
@@ -163,9 +172,247 @@ gen_plot()
 ```{r}
 
  gen_plot(var = "quality_interface", 
-          plot_title = "Quality of Citizen-State Interface")
+          plot_title = "Quality of Citizen-State Interface",
+          footstr = "Average of public channels, institutional channels, and intermediary channels.")
 
 ```
+
+### 
+```{r}
+
+ gen_plot(var = "resilience", 
+          plot_title = "Resilience",
+          footstr = "Average of trust in national government, perceptions on the civic and inverse of mass mobilization")
+
+```
+
+
+Row {data-height = 0}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Aggregate Indexes"
+)
+
+```
+
+Row 
+----------------------------------------------------------------------------------------------------------------------
+
+###
+```{r}
+
+ gen_plot(var = "social_capital", 
+          plot_title = "Social Capital",
+          footstr = "Source: V-DEM Engaged population & BTI – Social Capital, standardized")
+
+```
+
+
+###
+```{r}
+
+ gen_plot(var = "absence_exclusion", 
+          plot_title = "Absence of Exclusion",
+          footstr = "Source: V-DEM Equal Protection Rights and BTI Equal opportunity, standardized")
+
+```
+
+
+###
+```{r}
+
+ gen_plot(var = "absence_capture", 
+          plot_title = "Absence of Elite Capture",
+          footstr = "Source: V-DEM power distributed by social group and socioeconomic group and BTI Prosecution of Office Abuse, standardized")
+
+```
+
+
+Row {data-height = 0}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Civil Capacity Measures"
+)
+
+```
+
+
+Row 
+---------------------------------------------------------------------------------------------------
+
+###
+```{r}
+
+ gen_plot(var = "informal_channels", 
+          plot_title = "Informal Channels",
+          footstr = "V-DEM Informal and BTI Informal")
+
+```
+
+
+###
+```{r}
+
+ gen_plot(var = "institutional_channels", 
+          plot_title = "Institutional Channels",
+          footstr = "Source: V-DEM Free and Fair Elections, V-DEM Elected Local Government, IBP Open Budget, and BTI Free and Fair Elections, standardized")
+
+```
+
+
+###
+```{r}
+
+ gen_plot(var = "intermediary_channels", 
+          plot_title = "Intermediary Channels",
+          footstr = "Source: VDEM CSO participatory environment, CSO consultation, BTI: Interest Groups, and Civil Society Participation, standardized")
+
+```
+
+Row {data-height = 0}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Quality of the Citizen State Interface"
+)
+
+```
+
+
+
+Row 
+---------------------------------------------------------------------------------------------------
+
+###
+```{r}
+
+ gen_plot(var = "natgov_confidence", 
+          plot_title = "Trust in the National Government",
+          footstr = "Source: Percentage of people who report confidence in the national government, Gallup World Poll")
+
+```
+
+
+###
+```{r}
+
+ gen_plot(var = "percept_civicspace", 
+          plot_title = "Perceptions of the Civic Space",
+          footstr = "Source: Percentage of people who report trust in elections, media freedom, and having voiced their concerns to a public official. All from
+          Gallup World Poll.")
+
+```
+
+
+###
+```{r}
+
+ gen_plot(var = "v2cagenmob", 
+          plot_title = "Mass Mobilization",
+          footstr = "Source: V-DEM Mass Mobilization, standardized. A higher score is equal to more mass mobilizations")
+
+```
+
+Row {data-height = 0}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Resilience of the Social Contract"
+)
+
+```
+
+
+About
+-------------------------------------------------------------------------------------------------------------------------
+### Methodology Notes
+
+#### Conceptual Underpinnings
+
+Former World Bank President Robert Zoellick first referred to social contracts and development in 2009 following the global financial crisis, and it became a more central element of World Bank discourse in the wake of the Arab Spring in 2011 and 2012. Recent examples show the growing use of the concept of social contract in the World Bank’s engagement, such as the 2015 Middle East and North Africa strategy and the 2018 Europe and Central Asia Region flagship report “Toward a New Social Contract: Taking On Distributional Tensions in Europe and Central Asia”. The rising adoption of the terminology led to a 2019 review by the IEG of its use. The review found that social contracts were referenced in 21 SCDs over the past few years. The IEG report concluded that “social contract diagnostics are useful analytical innovations with relevant operational implications”.
+
+This factsheet is based on the 2021 World Bank report Social Contracts for Development: Bargaining, Contention, and Social Inclusion in Sub-Saharan Africa and the experience gained from the implementation of the report’s empirical framework.
+
+Raw data and more information can be found on Coalitions for Reforms website
+
+
+#### Data Sources
+1. Varieties of Democracy (V-DEM): Measures 600+ indicators annually from 1789 to the present for all countries of the world. The V-Dem approach stands out, first, as a large global collaboration among scholars with diverse areas of expertise; second, as the first project attempting to explain different varieties of democracy; and third, thanks to the highly disaggregated V-Dem data, the first project to explore causal mechanisms linking different aspects of democracy together. With five Principal Investigators, 23 Project Managers with special responsibility for issue areas covered in the V-Dem dataset, 33 Regional Managers, 134 Country Coordinators and more than 4000 Country Experts, the V-Dem project is one of the world’s largest social science data collection projects on democracy.
+
+2. Bertelsmann Stiftung’s Transformation Index (BTI): Bertelsmann Stiftung’s Transformation Index is a comprehensive tool that evaluates the status of political and economic transformation in countries worldwide, assessing factors such as democracy, governance, civil society, and market economy. The index is produced by the Bertelsmann Stiftung, a private, non-profit foundation based in Germany. Covers 137 countries currently across the World and has been active since 2006, with its latest report being in 2022. Scoring Format: Scores are based on a scale of 0-10, with higher scores indicating greater levels of political transformation, democratic governance, and rule of law.
+
+3. Gallup World Poll (GWP): Created in 2005, the GWP is a global network of quality data collection built to measure public opinion accurately and efficiently, even in hard-to-reach areas. The survey monitors the issues that matter most to societies worldwide, such as personal safety, food and shelter, employment, well-being, and confidence in national institutions. The survey is administered face to face or by telephone in more than 160 countries and areas and in over 140 languages, representing over 95% of the global adult population.
+
+
+#### Disclaimer
+The Prosperity Data360 platform only aggregates publicly available data and does not produce or own any mentioned data. Region and income group mapping followed in the data sheets are as per the official World Bank classification. Aggregates calculated do not include economies absent in the World Bank list. Economy borders or names do not necessarily reflect the World Bank Group's official position. Maps available through the Prosperity Data360 are for illustrative purposes and do not imply the expression of any opinion on the part of the World Bank, concerning the legal status of any economy or territory or concerning the delimitation of frontiers or boundaries.
+
+
+<style>
+
+#sidebar.section.sidebar {
+
+  background-color: white; 
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+
+}
+
+</style>
+
+
+
+```{r}
+
+output$download_factsheet <- downloadHandler(
+  filename = function() {
+    paste("Social_Contract_Factsheet_", input$wbcountryname, ".pdf", sep = "")
+  },
+  content = function(file) {
+    webshot2::webshot(app_url = "http://127.0.0.1:3838", file = file, vwidth = 1024, vheight = 768)
+  }
+)
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

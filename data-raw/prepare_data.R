@@ -1,6 +1,10 @@
 ################################################################################
 ######## PREPARE DATA FOR THE GALLUP PLUS OTHER SOURCES ANALYTICS ##############
 ################################################################################
+#### load all functions and necessary datasets
+
+devtools::load_all()
+
 
 #### -- package loading -- ####
 
@@ -217,6 +221,12 @@ cloutier_dt <-
                                                     index_fun = scale)) %>%
   mutate(civil_capacity = scale(x = social_capital + absence_exclusion + absence_capture)) %>%
   mutate(quality_interface = scale(informal_channels + institutional_channels + intermediary_channels)) %>%
+  mutate(percept_civicspace = compute_transdices(dt = .,
+                                                 vars = c("election_confidence", "voiced_opinion"),
+                                                 std_funs = scale,
+                                                 agg_fun = sum,
+                                                 index_fun = scale)) %>%
+  mutate(resilience = scale(scale(natgov_confidence) + percept_civicspace + scale(v2cagenmob))) %>%
   mutate(across(c(vdeminformal, btiinformal, vdeminstitutional,
                   btiinstitutional, vdemcso, bticso),
          scale)) %>%
@@ -234,7 +244,9 @@ cloutier_dt <-
                       vdeminstitutional = "Scaled sum of variables v2xel_frefair and v2xel_locelec",
                       btiinstitutional = "Scaled sum of variables bti_ffe and ibp_cat",
                       vdemcso = "Scaled sum of variables v2csprtcpt and v2cscnsult",
-                      bticso = "Scaled sum of the variables bti_ig and bti_csp")
+                      bticso = "Scaled sum of the variables bti_ig and bti_csp",
+                      percept_civicspace = "Perceptions of the Civic Space",
+                      resilience = "Resilience of the Social Contract")
 
 
 
@@ -242,7 +254,8 @@ index_list <- c("social_capital", "absence_exclusion", "absence_capture",
                 "vdeminformal", "btiinformal", "informal_channels",
                 "vdeminstitutional", "btiinstitutional", "institutional_channels",
                 "vdemcso", "bticso", "intermediary_channels","civil_capacity",
-                "quality_interface")
+                "quality_interface", "resilience", "v2cagenmob", "percept_civicspace",
+                "natgov_confidence")
 
 
 ##### create regional and global comparators datasets now
