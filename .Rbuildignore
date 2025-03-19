@@ -1,3 +1,4 @@
 ^cloutier\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
+^cloutier_dashboard.Rmd

@@ -1,0 +1,138 @@
+---
+title: "Country Dashboard"
+output: html_document
+runtime: shiny
+---
+
+```{r setup, include=FALSE}
+if (!requireNamespace("pacman", quietly = TRUE)) install.packages("pacman")
+
+pacman::p_load(shiny, dplyr, ggplot2, here, grid, htmltools, bslib, webshot2, gridExtra)
+
+load(here::here("data/cloutier_dt.rda"))
+load(here::here("data/globalcomp_dt.rda"))
+load(here::here("data/regcomp_dt.rda"))
+
+country_dt <- cloutier_dt %>%
+  filter(year >= 2005 & !is.na(wbcountryname))
+
+global_dt <- globalcomp_dt %>%
+  filter(year >= 2005) %>%
+  rename_with(~ paste0(.x, "_g"), .cols = -year)
+
+reg_dt <- regcomp_dt %>%
+  filter(year >= 2005 & !is.na(wbregion)) %>%
+  rename_with(~ paste0(.x, "_r"), .cols = c(-year, -wbregion))
+
+country_dt <- country_dt %>%
+  merge(global_dt, by = "year") %>%
+  merge(reg_dt, by = c("wbregion", "year")) %>%
+  mutate(year = as.integer(year))
+
+
+# Reactive dataset (should be in RMarkdown, not inside gen_plot)
+selected_country_data <- reactive({
+  req(input$selected_country)
+  
+  country_dt %>%
+    filter(wbcountryname == input$selected_country)
+})
+
+gen_plot <- function(dt, var = "civil_capacity", plot_title = "Civil Capacity", footstr) {
+  
+    plot_df <- selected_country_data()
+    
+    has_country_logical <- any(!is.na(plot_df[[var]]))
+    has_globalcomp_logical <- any(!is.na(plot_df[[paste0(var, "_g")]]))
+    has_regcomp_logical <- any(!is.na(plot_df[[paste0(var, "_r")]]))
+
+    
+    if (!has_country_logical & !has_globalcomp_logical & !has_regcomp_logical){
+      
+      plot.new()
+      
+      text(miss_x, miss_y, "Missing country, regional & global comparator data", cex = 1.5)
+      
+      return()
+      
+    } else if (!has_country_logical) {
+      
+      plot.new()
+      
+      text(miss_x, miss_y, "Missing country data", cex = 1.5)
+      
+      return()
+      
+    } else {
+      
+      plot_df$var <- plot_df[[var]]
+      plot_df$var_g <- plot_df[[paste0(var, "_g")]]
+      plot_df$var_r <- plot_df[[paste0(var, "_r")]]
+      
+      plot_df %>%
+        ggplot(aes(x = year)) +
+        geom_line(aes(y = var, 
+                      color = input$wbcountryname), 
+                  linewidth = 0.6) +
+        geom_line(aes(y = var_g, 
+                      color = "World"),
+                  linewidth = 0.4, 
+                  linetype = "dashed") +
+        geom_line(aes(y = var_r,
+                      color = unique(wbregion)),
+                  linewidth = 0.4,
+                  linetype = "dashed") + 
+        labs(title = plot_title,
+             x = NULL,
+             y = NULL,
+             caption = footstr) + 
+        theme_minimal() +
+        theme(legend.position = "bottom",
+              legend.title = element_blank(),
+              plot.title = element_text(size = 14, face = "bold"),
+              plot.caption = element_text(hjust = 0, size = 10, face = "bold")) 
+    }
+  
+}
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

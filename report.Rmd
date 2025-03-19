@@ -1,0 +1,257 @@
+---
+title: ""
+output: pdf_document
+
+params:
+  wbcountryname: NA
+  country_dt: NA
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE)
+
+if (sum(installed.packages()[,1] %in% "pacman") != 1){
+  
+  install.packages("pacman")
+  
+}
+
+pacman::p_load(dplyr, ggplot2, gridExtra)
+
+```
+
+
+```{r}
+
+gen_static_plot <- function(params,
+                            var = "civil_capacity",
+                            miss_x = 0.5,
+                            miss_y = 0.5,
+                            plot_title = "Civil Capacity",
+                            footstr, 
+                            anote_x = 0.5,
+                            anote_y = -0.1,
+                            anote_size = 10){
+  
+  country_dt <- params$country_dt
+  selected_country <- params$wbcountryname
+  
+  # Filter country data
+  plot_df <- 
+    country_dt %>%
+    filter(wbcountryname == selected_country & !is.na(.data[[var]])) %>%
+    dplyr::select(year, all_of(var), all_of(var, "_g"), all_of(var, "_r"))
+  
+  has_country_logical <- any(!is.na(plot_df[[var]]))
+  has_globalcomp_logical <- any(!is.na(plot_df[[paste0(var, "_g")]]))
+  has_regcomp_logical <- any(!is.na(plot_df[[paste0(var, "_r")]]))
+
+  if (!has_country_logical & !has_globalcomp_logical & !has_regcomp_logical){
+    
+    p <- 
+      ggplot() + 
+      annotate("text", 
+               x = miss_x, 
+               y = miss_y, 
+               label = "Missing country, regional & global comparator data") + 
+      theme_void()
+
+  } else if (!has_country_logical) {
+    
+    p <- 
+      ggplot() + 
+      annotate("text", 
+               x = miss_x, 
+               y = miss_y, 
+               label = "Missing country data") + 
+      theme_void()
+    
+  } else {
+    
+
+    plot_df <- 
+      plot_df %>% 
+      mutate(var = .data[[var]], 
+             var_g = .data[[paste0(var, "_g")]],
+             var_r = .data[[paste0(var, "_r")]])
+
+    
+    p <- 
+      ggplot(plot_df, aes(x = year)) +
+      geom_line(aes(y = var, color = country_name), linewidth = 0.6) +
+      geom_line(aes(y = var_g, color = "World"), linewidth = 0.4, linetype = "dashed") +
+      geom_line(aes(y = var_r, color = unique(wbregion)), linewidth = 0.4, linetype = "dashed") + 
+      labs(title = plot_title, x = NULL, y = NULL, caption = footstr) + 
+      ylim(-4, 4.1) + 
+      theme_minimal() +
+      theme(legend.position = "bottom",
+            legend.title = element_blank(),
+            plot.title = element_text(size = 14, face = "bold"),
+            plot.caption = element_text(hjust = 0, size = 10, face = "bold"))
+    
+    return(p)
+  }
+  
+}
+
+
+```
+
+
+# Social Contract Factsheet - `r params$wbcountryname`
+
+This report is being downloaded on : `r format(Sys.time(), "%Y-%m-%d %H:%M:%S")`
+
+\pagebreak
+
+## Aggregate Indexes
+```{r}
+
+p1 <- gen_static_plot(params = params, 
+                      var = "social_capital", 
+                      plot_title = "Civil Capacity", 
+                      footstr = "Average of social capital, absence of exclusion, 
+                      and absence of capture.")
+
+p2 <- gen_static_plot(params = params,
+                      var = "quality_interface", 
+                      plot_title = "Quality of Citizen-State Interface", 
+                      footstr = "Average of public channels, institutional channels, 
+                      and intermediary channels.")
+
+p3 <- gen_static_plot(params = params,
+                      var = "resilience", 
+                      plot_title = "Resilience", 
+                      footstr = "Average of trust in national government, perceptions on the civic, 
+                      and inverse of mass mobilization.")
+
+grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+
+```
+
+
+## Civil Capacity Measures
+```{r}
+
+p1 <- gen_static_plot(params = params,
+                      var = "social_capital", 
+                      plot_title = "Social Capital", 
+                      footstr = "Source: V-DEM Engaged population & BTI – Social Capital, 
+                      standardized.")
+
+p2 <- gen_static_plot(params = params,
+                      var = "absence_exclusion", 
+                      plot_title = "Absence of Exclusion", 
+                      footstr = "Source: V-DEM Equal Protection Rights and BTI Equal opportunity, 
+                      standardized.")
+
+p3 <- gen_static_plot(params = params,
+                      var = "absence_capture", 
+                      plot_title = "Absence of Elite Capture", 
+                      footstr = "Source: V-DEM power distributed by social group and socioeconomic 
+                      group and BTI Prosecution of Office Abuse, standardized.")
+
+grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+```
+
+
+## Quality of the Citizen-State Interface
+```{r}
+
+p1 <- gen_static_plot(params = params,
+                      var = "informal_channels", 
+                      plot_title = "Informal Channels", 
+                      footstr = "V-DEM Informal and BTI Informal.")
+
+p2 <- gen_static_plot(params = params,
+                      var = "institutional_channels", 
+                      plot_title = "Institutional Channels", 
+                      footstr = "Source: V-DEM Free and Fair Elections, V-DEM Elected Local Government, 
+                      IBP Open Budget, and BTI Free and Fair Elections, standardized.")
+
+p3 <- gen_static_plot(params = params,
+                      var = "intermediary_channels", 
+                      plot_title = "Intermediary Channels", 
+                      footstr = "Source: V-DEM CSO participatory environment, CSO consultation, 
+                      BTI: Interest Groups, and Civil Society Participation, standardized.")
+
+grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+
+```
+
+
+## Resilience of the Social Contract
+```{r}
+p1 <- gen_static_plot(params = params,
+                      var = "natgov_confidence", 
+                      plot_title = "Trust in the National Government", 
+                      footstr = "Source: Percentage of people who report confidence in the 
+                      national government, Gallup World Poll.")
+
+p2 <- gen_static_plot(params = params,
+                      var = "percept_civicspace", 
+                      plot_title = "Perceptions of the Civic Space", 
+                      footstr = "Source: Percentage of people who report trust in elections, 
+                      media freedom, and having voiced their concerns to a public official. 
+                      All from Gallup World Poll.")
+
+p3 <- gen_static_plot(params = params, 
+                      var = "v2cagenmob", 
+                      plot_title = "Mass Mobilization", 
+                      footstr = "Source: V-DEM Mass Mobilization, standardized. A higher 
+                      score is equal to more mass mobilizations.")
+
+grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

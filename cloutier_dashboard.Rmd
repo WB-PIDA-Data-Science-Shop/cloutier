@@ -1,0 +1,460 @@
+---
+title: "Social Contract Factsheet"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: rows
+    vertical_layout: scroll
+    theme: 
+      version: 4
+      bg: "#f0f8ff"
+      fg: "#34495e"
+      primary: "#2c3e50"
+      secondary: "#5dade2"
+runtime: shiny
+---
+
+```{r, echo = FALSE, include = FALSE, message = FALSE, warning = FALSE}
+
+if (sum(installed.packages()[,1] %in% "pacman") != 1){
+  
+  install.packages("pacman")
+  
+}
+
+pacman::p_load(flexdashboard, dplyr, ggplot2, 
+               here, shiny, grid, htmltools, 
+               bslib, webshot2, gridExtra)
+
+load(here::here("data/cloutier_dt.rda"))
+load(here::here("data/globalcomp_dt.rda"))
+load(here::here("data/regcomp_dt.rda"))
+
+### install package from github
+
+country_dt <- 
+  cloutier_dt %>%
+  filter(year >= 2005 & !is.na(wbcountryname))
+
+global_dt <- 
+  globalcomp_dt %>%
+  filter(year >= 2005) %>%
+  rename_with(~ paste0(.x, "_g"), .cols = -year)
+
+
+reg_dt <- 
+  regcomp_dt %>%
+  filter(year >= 2005 & !is.na(wbregion)) %>%
+  rename_with(~ paste0(.x, "_r"), .cols = c(-year, -wbregion))
+
+
+country_dt <- 
+  country_dt %>%
+  merge(global_dt, by = "year") %>%
+  merge(reg_dt, by = c("wbregion", "year")) %>%
+  mutate(year = as.integer(year)) 
+
+
+
+
+```
+
+
+Column {.sidebar}
+----------------------------------------------------------------------------------------------------------------------
+
+Please select your country of interest: 
+```{r}
+
+selectInput(inputId = "wbcountryname",
+            label = "",
+            choices = sort(unique(country_dt$wbcountryname)))
+
+
+# shiny::fluidPage(
+#   
+#   selectInput(inputId = "wbcountryname",
+#               label = "",
+#               choices = sort(unique(country_dt$wbcountryname))),
+#   
+#   hr(),
+#   downloadButton("download_report", "Download Report")
+#   
+# )
+# 
+# output$download_report <- downloadHandler(
+#   filename = function(){
+#     
+#     paste("Social_Contract_Factsheet_", input$wbcountryname, ".pdf", sep = "")
+#     
+#   },
+#   content = function(file){
+#     rmarkdown::render(input = "report.Rmd",
+#                       output_file = paste("Social_Contract_Factsheet_", input$wbcountryname, ".pdf", sep = ""),
+#                       params = list(wbcountryname = input$wbcountryname, country_dt = country_dt))
+#     
+#   }
+#   
+#   
+# )
+
+```
+
+
+
+```{r}
+#' A function to generate flexdashboard grobs/plots 
+#' 
+#' This function will generate the flexdashboard plots from the cloutier data that will plot a specified variable and 
+#' a specified comparator for the dashboard. 
+#' 
+#' @param var a character, the variable of interest
+#' @param comp_tag a character, a comparator tag i.e. either "_g" for global comparator or "_r" for regional #'comparator as is currently in the data. Make sure to prepare `country_dt` according to have those variables
+#' @param miss_x numeric, the x location for the message to be returned in the plot area when data is all missing
+#' @param miss_y numeric, the y location for the message to be returned in the plot area when data is all missing
+#' @param plot_title a character, title for the plot being created
+#' @param comp_label a character, the legend label for the comparator 
+#' 
+#' @export
+#' 
+#' @importFrom ggplot2 shiny
+
+# Server - Render Plot
+gen_plot <- function(var = "civil_capacity",
+                     country_dt, 
+                     country_name,
+                     miss_x = 0.5,
+                     miss_y = 0.5,
+                     plot_title = "Civil Capacity",
+                     footstr, 
+                     anote_x = 0.5,
+                     anote_y = -0.1,
+                     anote_size = 10){
+  
+  # Filter country data
+  plot_df <- country_dt[country_dt$wbcountryname == country_name & 
+                          !is.na(country_dt[[var]]),
+                        c("year", "wbregion", var, paste0(var, "_g"), paste0(var, "_r"))]
+  
+  has_country_logical <- any(!is.na(plot_df[[var]]))
+  has_globalcomp_logical <- any(!is.na(plot_df[[paste0(var, "_g")]]))
+  has_regcomp_logical <- any(!is.na(plot_df[[paste0(var, "_r")]]))
+
+  if (!has_country_logical & !has_globalcomp_logical & !has_regcomp_logical){
+    
+    p <- 
+      ggplot() + 
+      annotate("text", 
+               x = miss_x, 
+               y = miss_y, 
+               label = "Missing country, regional & global comparator data") + 
+      theme_void()
+
+  } else if (!has_country_logical) {
+    
+    p <- 
+      ggplot() + 
+      annotate("text", 
+               x = miss_x, 
+               y = miss_y, 
+               label = "Missing country data") + 
+      theme_void()
+    
+  } else {
+    
+    plot_df$var <- plot_df[[var]]
+    plot_df$var_g <- plot_df[[paste0(var, "_g")]]
+    plot_df$var_r <- plot_df[[paste0(var, "_r")]]
+    
+    p <- ggplot(plot_df, aes(x = year)) +
+      geom_line(aes(y = var, color = country_name), linewidth = 0.6) +
+      geom_line(aes(y = var_g, color = "World"), linewidth = 0.4, linetype = "dashed") +
+      geom_line(aes(y = var_r, color = unique(wbregion)), linewidth = 0.4, linetype = "dashed") + 
+      labs(title = plot_title, x = NULL, y = NULL, caption = footstr) + 
+      ylim(-4, 4.1) + 
+      theme_minimal() +
+      theme(legend.position = "bottom",
+            legend.title = element_blank(),
+            plot.title = element_text(size = 14, face = "bold"),
+            plot.caption = element_text(hjust = 0, size = 10, face = "bold"))
+    
+    return(p)
+  }
+  
+}
+
+```
+
+
+
+## {.tabset}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Aggregate Indexes"
+)
+
+```
+
+
+
+```{r}
+
+renderPlot({
+  
+  p1 <- gen_plot(var = "civil_capacity", 
+                 country_dt = country_dt, 
+                 country_name = input$wbcountryname,
+                 footstr = "Average of social capital, absence of exclusion, and absence of capture")
+
+  p2 <- gen_plot(var = "quality_interface",
+                 country_dt = country_dt, 
+                 country_name = input$wbcountryname,
+                 plot_title = "Quality of Citizen-State Interface",
+                 footstr = "Average of public channels, institutional channels, and intermediary channels.")
+
+  p3 <- gen_plot(var = "resilience",
+                 country_dt = country_dt, 
+                 country_name = input$wbcountryname,
+                 plot_title = "Resilience",
+                 footstr = "Average of trust in national government, perceptions on the civic and 
+                 inverse of mass mobilization")
+
+  grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+})
+
+```
+
+
+## {.tabset}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Civil Capacity Measures"
+)
+
+```
+
+
+
+```{r}
+
+renderPlot({ 
+  
+  p1 <- gen_plot(var = "social_capital",
+                 country_dt = country_dt,
+                 country_name = input$wbcountryname,
+                 plot_title = "Social Capital",
+                 footstr = "Source: V-DEM Engaged population & BTI – Social Capital, standardized")
+  
+  p2 <-  gen_plot(var = "absence_exclusion",
+                  country_dt = country_dt, 
+                  country_name = input$wbcountryname,
+                  plot_title = "Absence of Exclusion",
+                  footstr = "Source: V-DEM Equal Protection Rights and BTI Equal opportunity, standardized")
+
+  p3 <-  gen_plot(var = "absence_capture",
+                  country_dt = country_dt,
+                  country_name = input$wbcountryname,
+                  plot_title = "Absence of Elite Capture",
+                  footstr = "Source: V-DEM power distributed by social group and socioeconomic group 
+                  and BTI Prosecution of Office Abuse, standardized")
+
+  grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+})
+
+```
+
+
+## {.tabset}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Quality of Citizen-State Interface"
+)
+
+```
+
+
+
+```{r}
+
+renderPlot({ 
+  
+  p1 <- gen_plot(var = "informal_channels",
+                 country_dt = country_dt,
+                 country_name = input$wbcountryname,
+                 plot_title = "Public Channels",
+                 footstr = "V-DEM Informal and BTI Informal")
+
+  p2 <-  gen_plot(var = "institutional_channels",
+                  country_dt = country_dt,
+                  country_name = input$wbcountryname,
+                  plot_title = "Institutional Channels",
+                  footstr = "Source: V-DEM Free and Fair Elections, V-DEM Elected Local Government, 
+                  IBP Open Budget, and BTI Free and Fair Elections, standardized")
+  
+  p3 <-  gen_plot(var = "intermediary_channels",
+                  country_dt = country_dt,
+                  country_name = input$wbcountryname,
+                  plot_title = "Intermediary Channels",
+                  footstr = "Source: VDEM CSO participatory environment, CSO consultation, BTI: Interest Groups, 
+                  and Civil Society Participation, standardized")
+
+  
+  grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+  
+  })
+
+```
+
+
+
+## {.tabset}
+----------------------------------------------------------------------------------------------------------------------
+```{r, echo = FALSE, results='asis'}
+
+# Create a header with minimal padding
+tags$div(
+  style = "text-align: center; font-size: 20px; font-weight: bold; margin: 0px; padding: 5px;",
+  "Resilience of the Social Context"
+)
+
+```
+
+
+```{r}
+
+renderPlot({ 
+  
+  p1 <-  gen_plot(var = "natgov_confidence",
+                  country_dt = country_dt,
+                  country_name = input$wbcountryname,
+                  plot_title = "Trust in the National Government",
+                  footstr = "Source: Percentage of people who report confidence in the national government, 
+                  Gallup World Poll")
+
+
+  p2 <-  gen_plot(var = "percept_civicspace",
+                  country_dt = country_dt,
+                  country_name = input$wbcountryname,
+                  plot_title = "Perceptions of the Civic Space",
+                  footstr = "Source: Percentage of people who report trust in elections, media freedom, 
+                  and having voiced their concerns to a public official. All from Gallup World Poll.")
+  
+  p3 <-  gen_plot(var = "v2cagenmob",
+                  country_dt = country_dt,
+                  country_name = input$wbcountryname,
+                  plot_title = "Mass Mobilization",
+                  footstr = "Source: V-DEM Mass Mobilization, standardized. A higher score is equal 
+                  to more mass mobilizations")
+  
+  grid.arrange(grobs = list(p1, p2, p3), nrow = 1)
+
+})
+
+```
+
+
+
+About
+-------------------------------------------------------------------------------------------------------------------------
+### Methodology Notes
+
+#### Conceptual Underpinnings
+
+Former World Bank President Robert Zoellick first referred to social contracts and development in 2009 following the global financial crisis, and it became a more central element of World Bank discourse in the wake of the Arab Spring in 2011 and 2012. Recent examples show the growing use of the concept of social contract in the World Bank’s engagement, such as the 2015 Middle East and North Africa strategy and the 2018 Europe and Central Asia Region flagship report “Toward a New Social Contract: Taking On Distributional Tensions in Europe and Central Asia”. The rising adoption of the terminology led to a 2019 review by the IEG of its use. The review found that social contracts were referenced in 21 SCDs over the past few years. The IEG report concluded that “social contract diagnostics are useful analytical innovations with relevant operational implications”.
+
+This factsheet is based on the 2021 World Bank report [Social Contracts for Development: Bargaining, Contention, and Social Inclusion in Sub-Saharan Africa](https://documents1.worldbank.org/curated/en/528171640248433531/pdf/Bargaining-Contention-and-Social-Inclusion-in-Sub-Saharan-Africa.pdf) and the experience gained from the implementation of the report’s empirical framework.
+
+#### Variable Definitions
+
+**Civil Capacity**: The level of voice and collective action capabilities that average citizens have to hold the State accountable and influence public policy.
+
+- **Social capital**: The extent to which citizens are knowledgeable about major policy debates and engage in policy discussions among themselves. The amount of interpersonal trust and social cohesion enabling for collective action among groups. 
+
+-	**Lack of elite capture**: The level to which bargaining power within the social contract is evenly distributed and not overly concentrated in a narrow group of elites. The extent to which abuses of power are prosecuted. 
+
+-	**Lack of exclusion**: The extent to which there is no marginalization and exclusion of groups based on economic or socio-demographic dimensions where they would be excluded from participating in the social contract.  
+
+**Quality of the Citizen-State Interface**: The quality and openness of the channels of communications and exchange between citizens and the State.
+
+-	**Public channels**: The levels of freedom of expression and of the press that allow for opinions to be shared widely and openly and for public opinion to circulate freely.
+
+-	**Institutional channels**: Presence of formal access of information institutions (such as open budgeting and open contracting), free and fair elections, and state-led citizen engagement initiatives to consult with citizens.
+-	**Intermediary channels**: The extent to which there is a diverse selection of formal, informal, traditional, or religious organizations that can represent the interests of broad groups of citizens with the State.  
+
+**Resilience**: The extent to which there is evidence of a misalignment between citizens’ expectations and their perceptions of the outcomes from the social contract, and that there is a way forward for the resolution these misalignments through peaceful dialogue.
+
+-	**Trust in the national government**: The self-reported level of trust from citizens in their national government. 
+
+-	**Perceptions on the quality of the civic space**: To what extent are citizens reporting positive perceptions on their freedom of expression, the fairness of elections, and their capacity to voice their opinion to public officials. 
+
+-	**Mass mobilization**: The level of presence of mass mobilizations such as protests and demonstrations.
+
+#### Data Sources
+
+1. **Varieties of Democracy (V-DEM)**: Measures 600+ indicators annually from 1789 to the present for all countries of the world. The V-Dem approach stands out, first, as a large global collaboration among scholars with diverse areas of expertise; second, as the first project attempting to explain different varieties of democracy; and third, thanks to the highly disaggregated V-Dem data, the first project to explore causal mechanisms linking different aspects of democracy together. With five Principal Investigators, 23 Project Managers with special responsibility for issue areas covered in the V-Dem dataset, 33 Regional Managers, 134 Country Coordinators and more than 4000 Country Experts, the V-Dem project is one of the world’s largest social science data collection projects on democracy.
+
+2. **Bertelsmann Stiftung’s Transformation Index (BTI)**: Bertelsmann Stiftung’s Transformation Index is a comprehensive tool that evaluates the status of political and economic transformation in countries worldwide, assessing factors such as democracy, governance, civil society, and market economy. The index is produced by the Bertelsmann Stiftung, a private, non-profit foundation based in Germany. Covers 137 countries currently across the World and has been active since 2006, with its latest report being in 2022. Scoring Format: Scores are based on a scale of 0-10, with higher scores indicating greater levels of political transformation, democratic governance, and rule of law.
+
+3. **Gallup World Poll (GWP)**: Created in 2005, the GWP is a global network of quality data collection built to measure public opinion accurately and efficiently, even in hard-to-reach areas. The survey monitors the issues that matter most to societies worldwide, such as personal safety, food and shelter, employment, well-being, and confidence in national institutions. The survey is administered face to face or by telephone in more than 160 countries and areas and in over 140 languages, representing over 95% of the global adult population.
+
+
+Raw data and more information can be found on [Coalitions for Reforms website](https://www.worldbank.org/en/programs/coalitions-and-collective-action-for-reforms)
+
+<style>
+
+#sidebar.section.sidebar {
+
+  background-color: white; 
+  font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif !important;
+
+}
+
+</style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
