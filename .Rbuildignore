@@ -1,11 +1,8 @@
 ^cloutier\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
-<<<<<<< HEAD
 ^cloutier_dashboard.Rmd$
 ^rsconnect$
 ^report.Rmd$
-=======
 ^cloutier_dashboard.Rmd
 ^LICENSE\.md$
->>>>>>> 14182bc4cbd3b0d61cd5bb8076fd80121832258b
