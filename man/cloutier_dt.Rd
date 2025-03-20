@@ -53,6 +53,7 @@ V-DEM, Gallup & VOG
 \item{v2cseeorgs}{Index of (political) exclusion by socio-economic group}
 \item{v2cscnsult}{Index of (political) exclusion by political group}
 \item{voltime_org}{Volunteered your time to an organization?}
+\item{bti_ig}{Interest Groups}
 \item{bti_csp}{Civil Society Participation}
 \item{wbcountryname}{World Bank Country Name}
 \item{wbcode}{World Bank Country ISO-3 Code}
@@ -60,6 +61,23 @@ V-DEM, Gallup & VOG
 \item{wbincomegroup}{World Bank Income Group}
 \item{wblendingcat}{World Bank Lending Category}
 \item{year}{Year}
+\item{natgov_confidence}{Confidence in National Government}
+\item{social_capital}{Social Capital}
+\item{absence_exclusion}{Absence of Exclusion}
+\item{absence_capture}{Absence of Elite Capture}
+\item{vdeminformal}{Scaled sum of variables v2x_freexp_altinf and v2caassemb}
+\item{btiinformal}{Scaled sum of variables bti_aar and bti_foe}
+\item{informal_channels}{Informal Channels}
+\item{vdeminstitutional}{Scaled sum of variables v2xel_frefair and v2xel_locelec}
+\item{btiinstitutional}{Scaled sum of variables bti_ffe and ibp_cat}
+\item{institutional_channels}{Institutional Channels}
+\item{vdemcso}{Scaled sum of variables v2csprtcpt and v2cscnsult}
+\item{bticso}{Scaled sum of the variables bti_ig and bti_csp}
+\item{intermediary_channels}{Intermediary Channels}
+\item{civil_capacity}{Civil Capacity}
+\item{quality_interface}{Quality of the Citizen-State Interface}
+\item{percept_civicspace}{Perceptions of the Civic Space}
+\item{resilience}{Resilience of the Social Contract}
 }
 }
 \usage{

@@ -15,7 +15,7 @@
 #' @param index_fun the function applied to the combined transformed variables typically used
 #' to convert the result to the original scale of `std_funs`.
 #'
-#' @importFrom data.table as.data.table
+#' @import data.table
 #'
 #'
 #'
