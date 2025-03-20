@@ -274,6 +274,25 @@ globalcomp_dt <-
   .[, lapply(.SD, mean, na.rm = TRUE), .SDcols = index_list, by = "year"]
 
 
+### run automated data documentation
+gen_var_documentation(dt = cloutier_dt,
+                      file_path = "R/cloutier.R")
+
+gen_var_documentation(dt = regcomp_dt,
+                      file_path = "R/regcomp.R",
+                      title = "Mat's Governance Participation Indicators Dataset (Regional Aggregates)",
+                      description = "This data computes the regional aggregates from the Cloutier Dataset",
+                      format = "Data frame with regional aggregate indicators, unit of observation region-year",
+                      source = "V-DEM, Gallup & VOG indicators, regional aggregates",
+                      dataname = "regcomp_dt")
+
+gen_var_documentation(dt = globalcomp_dt,
+                      file_path = "R/globalcomp.R",
+                      title = "Mat's Governance Participation Indicators Dataset (Global Aggregates)",
+                      description = "This data computes the global aggregates from the Cloutier Dataset",
+                      format = "Data frame with global aggregate indicators, unit of observation year",
+                      source = "V-DEM, Gallup & VOG indicators, global aggregates",
+                      dataname = "globalcomp_dt")
 
 ### save in convenient form for diffs
 write.csv(cloutier_dt, "data-raw/cloutier_dt.csv")

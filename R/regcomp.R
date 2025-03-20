@@ -1,27 +1,31 @@
-#' @title Regional Comparators Indicators Dataset for the Cloutier Dataset
+#' @title Mat's Governance Participation Indicators Dataset (Regional Aggregates)
 #'
-#' @description This dataset contains various indicators related to regional comparators generated from the cloutier dataset.
+#' @description This data computes the regional aggregates from the Cloutier Dataset
 #'
-#' @format Data frame with indicators, unit of observation region-year
+#' @format Data frame with regional aggregate indicators, unit of observation region-year
 #'
-#' @source V-DEM, Gallup & VOG
+#' @source V-DEM, Gallup & VOG indicators, regional aggregates
 #' \describe{
-#' \item{year}{Year}
-#' \item{wbregion}{World Bank Region Name}
-#' \item{social_capital}{Social Capital}
-#' \item{absence_exclusion}{Absence of Exclusion}
-#' \item{absence_capture}{Absence of Elite Capture}
-#' \item{vdeminformal}{Scaled sum of variables v2x_freexp_altinf and v2caassemb}
-#' \item{btiinformal}{Scaled sum of variables bti_aar and bti_foe}
-#' \item{informal_channels}{Informal Channels}
-#' \item{vdeminstitutional}{Scaled sum of variables v2xel_frefair and v2xel_locelec}
-#' \item{btiinstitutional}{Scaled sum of variables bti_ffe and ibp_cat}
-#' \item{institutional_channels}{Institutional Channels}
-#' \item{vdemcso}{Scaled sum of variables v2csprtcpt and v2cscnsult}
-#' \item{bticso}{Scaled sum of the variables bti_ig and bti_csp}
-#' \item{intermediary_channels}{Intermediary Channels}
-#' \item{civil_capacity}{Civil Capacity}
-#' \item{quality_interface}{Quality of the Citizen-State Interface}
+#' \item{year}{Social Capital}
+#' \item{wbregion}{Absence of Exclusion}
+#' \item{social_capital}{Absence of Elite Capture}
+#' \item{absence_exclusion}{Scaled sum of variables v2x_freexp_altinf and v2caassemb}
+#' \item{absence_capture}{Scaled sum of variables bti_aar and bti_foe}
+#' \item{vdeminformal}{Informal Channels}
+#' \item{btiinformal}{Scaled sum of variables v2xel_frefair and v2xel_locelec}
+#' \item{informal_channels}{Scaled sum of variables bti_ffe and ibp_cat}
+#' \item{vdeminstitutional}{Institutional Channels}
+#' \item{btiinstitutional}{Scaled sum of variables v2csprtcpt and v2cscnsult}
+#' \item{institutional_channels}{Scaled sum of the variables bti_ig and bti_csp}
+#' \item{vdemcso}{Intermediary Channels}
+#' \item{bticso}{Civil Capacity}
+#' \item{intermediary_channels}{Quality of the Citizen-State Interface}
+#' \item{civil_capacity}{Resilience of the Social Contract}
+#' \item{quality_interface}{To what extent are elections free and fair?}
+#' \item{resilience}{Perceptions of the Civic Space}
+#' \item{v2cagenmob}{Confidence in National Government}
+#' \item{percept_civicspace}{Social Capital}
+#' \item{natgov_confidence}{Absence of Exclusion}
 #' } 
 #' @examples 
 #' regcomp_dt
