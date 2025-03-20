@@ -1,4 +1,6 @@
 ^cloutier\.Rproj$
 ^\.Rproj\.user$
 ^data-raw$
-^cloutier_dashboard.Rmd
+^cloutier_dashboard.Rmd$
+^rsconnect$
+^report.Rmd$

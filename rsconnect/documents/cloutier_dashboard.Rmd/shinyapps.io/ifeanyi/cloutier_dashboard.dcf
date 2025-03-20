@@ -5,7 +5,7 @@ account: ifeanyi
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14272816
-bundleId: 9970849
+bundleId: 9971428
 url: https://ifeanyi.shinyapps.io/cloutier_dashboard/
 version: 1
 asMultiple: FALSE

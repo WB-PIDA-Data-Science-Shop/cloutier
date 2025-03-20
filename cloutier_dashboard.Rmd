@@ -54,8 +54,6 @@ country_dt <-
   mutate(year = as.integer(year)) 
 
 
-
-
 ```
 
 
@@ -65,37 +63,43 @@ Column {.sidebar}
 Please select your country of interest: 
 ```{r}
 
-selectInput(inputId = "wbcountryname",
-            label = "",
-            choices = sort(unique(country_dt$wbcountryname)))
+# selectInput(inputId = "wbcountryname",
+#             label = "",
+#             choices = sort(unique(country_dt$wbcountryname)))
 
 
-# shiny::fluidPage(
-#   
-#   selectInput(inputId = "wbcountryname",
-#               label = "",
-#               choices = sort(unique(country_dt$wbcountryname))),
-#   
-#   hr(),
-#   downloadButton("download_report", "Download Report")
-#   
-# )
-# 
-# output$download_report <- downloadHandler(
-#   filename = function(){
-#     
-#     paste("Social_Contract_Factsheet_", input$wbcountryname, ".pdf", sep = "")
-#     
-#   },
-#   content = function(file){
-#     rmarkdown::render(input = "report.Rmd",
-#                       output_file = paste("Social_Contract_Factsheet_", input$wbcountryname, ".pdf", sep = ""),
-#                       params = list(wbcountryname = input$wbcountryname, country_dt = country_dt))
-#     
-#   }
-#   
-#   
-# )
+shiny::fluidPage(
+
+  selectInput(inputId = "wbcountryname",
+              label = "",
+              choices = sort(unique(country_dt$wbcountryname))),
+
+  hr(),
+  downloadButton("download_report", "Download Report")
+
+)
+
+
+output$download_report <- downloadHandler(
+  filename = function() {
+    paste0("Social_Contract_Factsheet_", input$wbcountryname, ".html")
+  },
+  content = function(file) {
+    # Use a temporary directory to store the report
+    tempReport <- file.path(tempdir(), paste0("Social_Contract_Factsheet_", input$wbcountryname, ".html"))
+
+    # Render the report to the temp directory
+    rmarkdown::render(
+      input = "report.Rmd",
+      output_file = tempReport,
+      params = list(wbcountryname = input$wbcountryname, country_dt = country_dt),
+      envir = new.env(parent = globalenv())  # Helps prevent variable conflicts
+    )
+
+    # Copy the rendered file to the `file` path expected by `downloadHandler`
+    file.copy(tempReport, file, overwrite = TRUE)
+  }
+)
 
 ```
 
@@ -177,9 +181,9 @@ gen_plot <- function(var = "civil_capacity",
             plot.title = element_text(size = 14, face = "bold"),
             plot.caption = element_text(hjust = 0, size = 10, face = "bold"))
     
-    return(p)
+
   }
-  
+  return(p)
 }
 
 ```
