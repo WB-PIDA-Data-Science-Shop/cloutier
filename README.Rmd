@@ -1,0 +1,82 @@
+---
+output: github_document
+---
+
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
+)
+
+if (sum(installed.packages()[,1] %in% "pacman") != 1){
+  
+  install.packages("pacman")
+  
+}
+
+pacman::p_load(here)
+
+```
+
+# cloutier
+
+<!-- badges: start -->
+[![R-CMD-check](https://github.com/WB-PIDA-Data-Science-Shop/cloutier/blob/master/.github/workflows/Rcmdcheck_overkill.yml)
+<!-- badges: end -->
+
+The goal of cloutier is to curate data from the Gallup, VDEM and the VoG towards creating a social contract factsheet
+flexdashboard. This is a product of the Public Institutions Data and Analytics Unit within the Institutions Department upon the request of Mathieu Cloutier both of the World Bank.    
+
+## Installation
+
+You can install the development version of cloutier from Github as follows:
+
+```{r}
+
+# install.packages("remotes")
+remotes::install_github("WB-PIDA-Data-Science-Shop/cloutier")
+
+
+```
+
+The package can be loaded as follows: 
+```{r example}
+library(cloutier)
+## basic example code
+```
+
+You may reproduce all published datasets within this package by simply this file: 
+
+```{r}
+
+source(here("data-raw/prepare_data.R"))
+
+```
+
+
+### country level data
+```{r}
+
+head(cloutier_dt[cloutier_dt$year >= 2005,])
+
+```
+
+### regional comparators dataset
+```{r}
+
+head(regcomp_dt[regcomp_dt$year >= 2005,])
+
+```
+
+### global comparators dataset
+```{r}
+
+head(globalcomp_dt[globalcomp_dt$year >= 2005,])
+
+```
+
+
