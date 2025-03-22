@@ -155,7 +155,7 @@ combine_dt <-
                 "v2cseeorgs", "v2cscnsult", "voltime_org", "bti_aar",
                 "bti_ig", "bti_csp", "wbcountryname", "wbcode", "wbregion",
                 "wbincomegroup", "wblendingcat", "year", "natgov_confidence",
-                "election_confidence")
+                "election_confidence", "media_freedom")
 
 #### include the variable labels for the v2 variables in combine_dt that are
 #### unlabelled and have labels in vdemlabel_dt
@@ -221,12 +221,8 @@ cloutier_dt <-
                                                     index_fun = scale)) %>%
   mutate(civil_capacity = scale(x = social_capital + absence_exclusion + absence_capture)) %>%
   mutate(quality_interface = scale(informal_channels + institutional_channels + intermediary_channels)) %>%
-  mutate(percept_civicspace = compute_transdices(dt = .,
-                                                 vars = c("election_confidence", "voiced_opinion"),
-                                                 std_funs = scale,
-                                                 agg_fun = sum,
-                                                 index_fun = scale)) %>%
-  mutate(resilience = scale(scale(natgov_confidence) + percept_civicspace + scale(v2cagenmob))) %>%
+  mutate(percept_civicspace = (election_confidence + voiced_opinion + media_freedom) / 3) %>%
+  mutate(resilience = scale(natgov_confidence + percept_civicspace - v2cagenmob)) %>%
   mutate(across(c(vdeminformal, btiinformal, vdeminstitutional,
                   btiinstitutional, vdemcso, bticso),
          scale)) %>%

@@ -1,0 +1,1 @@
+globalVariables(c("index", "var"))

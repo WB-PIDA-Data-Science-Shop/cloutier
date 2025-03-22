@@ -6,25 +6,25 @@
 #'
 #' @source V-DEM, Gallup & VOG indicators, global aggregates
 #' \describe{
-#' \item{year}{Social Capital}
-#' \item{social_capital}{Absence of Exclusion}
-#' \item{absence_exclusion}{Absence of Elite Capture}
-#' \item{absence_capture}{Scaled sum of variables v2x_freexp_altinf and v2caassemb}
-#' \item{vdeminformal}{Scaled sum of variables bti_aar and bti_foe}
-#' \item{btiinformal}{Informal Channels}
-#' \item{informal_channels}{Scaled sum of variables v2xel_frefair and v2xel_locelec}
-#' \item{vdeminstitutional}{Scaled sum of variables bti_ffe and ibp_cat}
-#' \item{btiinstitutional}{Institutional Channels}
-#' \item{institutional_channels}{Scaled sum of variables v2csprtcpt and v2cscnsult}
-#' \item{vdemcso}{Scaled sum of the variables bti_ig and bti_csp}
-#' \item{bticso}{Intermediary Channels}
-#' \item{intermediary_channels}{Civil Capacity}
-#' \item{civil_capacity}{Quality of the Citizen-State Interface}
-#' \item{quality_interface}{Resilience of the Social Contract}
-#' \item{resilience}{To what extent are elections free and fair?}
-#' \item{v2cagenmob}{Perceptions of the Civic Space}
-#' \item{percept_civicspace}{Confidence in National Government}
-#' \item{natgov_confidence}{Social Capital}
+#' \item{year}{Year}
+#' \item{social_capital}{Social Capital}
+#' \item{absence_exclusion}{Absence of Exclusion}
+#' \item{absence_capture}{Absence of Elite Capture}
+#' \item{vdeminformal}{Scaled sum of variables v2x_freexp_altinf and v2caassemb}
+#' \item{btiinformal}{Scaled sum of variables bti_aar and bti_foe}
+#' \item{informal_channels}{Informal Channels}
+#' \item{vdeminstitutional}{Scaled sum of variables v2xel_frefair and v2xel_locelec}
+#' \item{btiinstitutional}{Scaled sum of variables bti_ffe and ibp_cat}
+#' \item{institutional_channels}{Institutional Channels}
+#' \item{vdemcso}{Scaled sum of variables v2csprtcpt and v2cscnsult}
+#' \item{bticso}{Scaled sum of the variables bti_ig and bti_csp}
+#' \item{intermediary_channels}{Intermediary Channels}
+#' \item{civil_capacity}{Civil Capacity}
+#' \item{quality_interface}{Quality of the Citizen-State Interface}
+#' \item{resilience}{Resilience of the Social Contract}
+#' \item{v2cagenmob}{To what extent are elections free and fair?}
+#' \item{percept_civicspace}{Perceptions of the Civic Space}
+#' \item{natgov_confidence}{Confidence in National Government}
 #' } 
 #' @examples 
 #' globalcomp_dt

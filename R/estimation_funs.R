@@ -75,9 +75,20 @@ preserve_labels_as_numeric <- function(x) {
 }
 
 
+unit_scaler <- function(x){
+
+  y <- (x - min(x)) / (max(x) - min(x))
+
+  return(y)
+
+}
 
 
+identity_scaler <- function(x){
 
+  return(x)
+
+}
 
 
 
