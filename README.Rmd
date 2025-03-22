@@ -25,7 +25,7 @@ pacman::p_load(here)
 # cloutier
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/WB-PIDA-Data-Science-Shop/cloutier/blob/master/.github/workflows/Rcmdcheck_overkill.yml)
+![R-CMD-check](https://github.com/WB-PIDA-Data-Science-Shop/cloutier/blob/master/.github/workflows/Rcmdcheck_overkill.yml)
 <!-- badges: end -->
 
 The goal of cloutier is to curate data from the Gallup, VDEM and the VoG towards creating a social contract factsheet
@@ -49,7 +49,7 @@ library(cloutier)
 ## basic example code
 ```
 
-You may reproduce all published datasets within this package by simply this file: 
+You may reproduce all published datasets within this package by simply running this ReadMe.Rmd file within the project environment (i.e. just click the .Rproj file and run this Readme.Rmd) or you can run the following while in the project environment: 
 
 ```{r}
 

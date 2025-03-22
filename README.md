@@ -5,7 +5,7 @@
 
 <!-- badges: start -->
 
-\[![R-CMD-check](https://github.com/WB-PIDA-Data-Science-Shop/cloutier/blob/master/.github/workflows/Rcmdcheck_overkill.yml)
+![R-CMD-check](https://github.com/WB-PIDA-Data-Science-Shop/cloutier/blob/master/.github/workflows/Rcmdcheck_overkill.yml)
 <!-- badges: end -->
 
 The goal of cloutier is to curate data from the Gallup, VDEM and the VoG
@@ -24,8 +24,19 @@ follows:
 # install.packages("remotes")
 remotes::install_github("WB-PIDA-Data-Science-Shop/cloutier")
 #> Using GitHub PAT from the git credential store.
-#> Skipping install of 'cloutier' from a github remote, the SHA1 (bbb7e873) has not changed since last install.
-#>   Use `force = TRUE` to force installation
+#> Downloading GitHub repo WB-PIDA-Data-Science-Shop/cloutier@HEAD
+#> 
+#> ── R CMD build ─────────────────────────────────────────────────────────────────
+#>          checking for file 'C:\Users\wb559885\AppData\Local\Temp\RtmpWuZcgF\remotes4c431df5e8b\WB-PIDA-Data-Science-Shop-cloutier-157d8bd/DESCRIPTION' ...  ✔  checking for file 'C:\Users\wb559885\AppData\Local\Temp\RtmpWuZcgF\remotes4c431df5e8b\WB-PIDA-Data-Science-Shop-cloutier-157d8bd/DESCRIPTION' (951ms)
+#>       ─  preparing 'cloutier': (425ms)
+#>    checking DESCRIPTION meta-information ...  ✔  checking DESCRIPTION meta-information
+#>       ─  checking for LF line-endings in source and make files and shell scripts (646ms)
+#>   ─  checking for empty or unneeded directories
+#> ─  building 'cloutier_0.0.0.9000.tar.gz'
+#>      
+#> 
+#> Installing package into 'C:/Users/wb559885/AppData/Local/R/win-library/4.4'
+#> (as 'lib' is unspecified)
 ```
 
 The package can be loaded as follows:
@@ -36,7 +47,9 @@ library(cloutier)
 ```
 
 You may reproduce all published datasets within this package by simply
-this file:
+running this ReadMe.Rmd file within the project environment (i.e. just
+click the .Rproj file and run this Readme.Rmd) or you can run the
+following while in the project environment:
 
 ``` r
 
