@@ -194,7 +194,7 @@ cloutier_dt <-
                                                 agg_fun = sum,
                                                 index_fun = scale)) %>%
   mutate(absence_capture = compute_transdices(dt = .,
-                                              vars = c("v2pepwrsoc", "v2pepwrses"),
+                                              vars = c("v2pepwrsoc", "v2pepwrses", "bti_poa"),
                                               std_funs = scale,
                                               agg_fun = sum,
                                               index_fun = scale)) %>%
